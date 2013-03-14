@@ -1,4 +1,5 @@
 
+from gevent import socket
 import msgpack
 import struct
 import sys

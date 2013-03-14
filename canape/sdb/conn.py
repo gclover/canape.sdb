@@ -1,7 +1,7 @@
 
 import gevent
 from gevent import socket
-from canpae.sdb import gutils
+from canape.sdb import gutils
 
 class Sdb(object):
 

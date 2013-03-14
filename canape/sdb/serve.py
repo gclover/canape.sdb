@@ -7,8 +7,9 @@ import leveldb
 
 class CacheDb(object):
 
-	def __init__(self, host, port):
-		self.db = redis.StrictRedis(host=host, port=port, db=0)			
+	def __init__(self, sockfile):
+		#self.db = redis.StrictRedis(host=host, port=port, db=0)			
+		self.db = redis.Redis(unix_socket_path=sockfile)			
 	
 	def get(self, k):
 		return self.db.get(k)
@@ -22,10 +23,10 @@ class FileDb(object):
 		self.db = leveldb.LevelDB(path)
 	
 	def get(self, k):
-		return self.db.Get(k)
+		return self.db.get(k)
 
 	def put(self, k, v):
-		return self.db.Put(k, v)
+		return self.db.put(k, v)
 
 
 class SdbProcessor(Processor):
@@ -56,7 +57,7 @@ def main():
 	
 	import sys
 	
-	cachedb = CacheDb('localhost', 6379)
+	cachedb = CacheDb('/tmp/redis.sock')
 	filedb = FileDb('/tmp/l2')
 	
 	processor = SdbProcessor(cachedb, filedb)
