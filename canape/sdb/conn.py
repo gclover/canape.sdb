@@ -32,25 +32,22 @@ class Sdb(object):
 		
 class ClusterSdb(object):
 	
-	def __init__(self, addrs):
-		nodes = [self.nameof(a) for a in addrs]
-		self.ring = HashRing(nodes)
+	def __init__(self, nodes):
+		names = [name for name in nodes]
+		self.ring = HashRing(names)
 		self.sdbs = {}
-		for addr in addrs:
-			self.sdbs[self.nameof(addr)] = Sdb(addr)
+		for (name, addr) in nodes.items():
+			self.sdbs[name] = Sdb(addr)
 			
-	def nameof(self, node):
-		return '%s:%s' % node
-
 	def close(self):
 		for sdb in self.sdbs.values():
 			sdb.close()
 	
 	def put(self, k, v):
-		node = self.ring.get_node(k)
-		return self.sdbs[node].put(k, v)
+		name = self.ring.get_node(k)
+		return self.sdbs[name].put(k, v)
 
 	def get(self, k):
-		node = self.ring.get_node(k)
-		return self.sdbs[node].get(k)
+		name = self.ring.get_node(k)
+		return self.sdbs[name].get(k)
 
