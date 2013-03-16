@@ -50,6 +50,7 @@ class SdbProcessor(Processor):
 		if v is not None:
 			self.cachedb.put(k, v)
 		return v
+		
 
 	def put(self, pa):
 		(k, v) = pa
@@ -62,22 +63,24 @@ def serve():
 	parser = OptionParser()
 	parser.add_option('-c', '--cache', dest='cache_addr', help='cache address')
 	parser.add_option('-s', '--storage', dest='storage_addr', help='storage file address')
+	parser.add_option('-p', '--port', dest='port', help='serve port')
 	(options, args) = parser.parse_args()
 	
 	storage_addr = options.storage_addr
 	cache_addr = options.cache_addr
+	serve_port = 6000 if options.port is None else int(options.port)
+	
 	if ':' in cache_addr:
 		(host, port) = (cache_addr.split(':'))
-		port = int(port)
-		cache_addr = (host, port)
+		cache_addr = (host, int(port))
 	
 	cachedb = CacheDb(cache_addr)
 	filedb = StorageDb(storage_addr)
 	
 	processor = SdbProcessor(cachedb, filedb)
 	handle = SockHandle(processor)
-	server = StreamServer(('0.0.0.0', 6000), handle)
-	print 'Starting sdb server on port 6000'
+	server = StreamServer(('0.0.0.0', serve_port), handle)
+	print 'Starting sdb server on port %s' % serve_port
 	
 	server.serve_forever()
 	
