@@ -5,12 +5,16 @@ import struct
 import sys
 import traceback
 
+handle_tag = 'HA'
+params_tag = 'PA'
+bye_tag = '_BYE_'
+
 def pack(handle, params):
-	return msgpack.packb({'ha': handle, 'pa': params})
+	return msgpack.packb({handle_tag: handle, params_tag: params})
 
 def unpack(msg):
 	req = msgpack.unpackb(msg)
-	return (req['ha'], req['pa'])
+	return (req[handle_tag], req[params_tag])
 	
 def send(sock, ha, pa):
 	req = pack(ha, pa)
@@ -29,7 +33,7 @@ def sendrecv(sock, ha, pa):
 	return recv(sock)
 
 def bye(sock):
-	send(sock, '_bye_', '')
+	send(sock, bye_tag, '')
 	
 class SockHandle(object):
 
@@ -40,16 +44,16 @@ class SockHandle(object):
 		try:
 			while True:
 				(ha, pa) = recv(sock)
-				if ha == '_bye_':
+				if ha == bye_tag:
 					break
-				re = self.processor.run(ha, pa)
+				hap = ha[0:-1] if ha.endswith('_') else ha
+				re = self.processor.run(hap, pa)
 				if ha.endswith('_'):
 					continue
-				send(sock, ha, re)
+				send(sock, 0, re)
 		except Exception, e:
 			traceback.print_exc(file=sys.stdout)
-			send(sock, 'error', str(e))
-		#sock.shutdown(socket.SHUT_WR)
+			send(sock, -1, str(e))
 		sock.close()
 
 class Processor(object):

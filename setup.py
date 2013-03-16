@@ -22,7 +22,7 @@ def main():
 		package_dir = {'':'.'},
 		zip_safe = False,
 		
-		entry_points = {'console_scripts': ['canape.sdb = canape.sdb.serve:main' ] },
+		entry_points = {'console_scripts': ['canape.sdb = canape.sdb.serve:serve'] },
 		
 		description = "canape sdb",
 		author = "gclover",

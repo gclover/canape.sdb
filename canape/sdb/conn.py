@@ -16,7 +16,7 @@ class Sdb(object):
 	def put(self, k, v):
 		try:
 			(ha, res) = gutils.sendrecv(self.sock, 'put', (k, v))
-			if ha != 'error':
+			if ha == 0:
 				return res
 		except Exception, e:
 			print e	
@@ -24,7 +24,7 @@ class Sdb(object):
 	def get(self, k):
 		try:
 			(ha, res) = gutils.sendrecv(self.sock, 'get', k)
-			if ha != 'error':
+			if ha == 0:
 				return res
 		except Exception, e:
 			print e
@@ -33,20 +33,20 @@ class ClusterSdb(object):
 	
 	import ring_;
 
-	def __init__(self, nodes):
+	def __init__(self, node_addrs):
 		self.ring = ring_.Ring();
 		self.nodes = {}
-		for (name, addr) in enumerate(nodes):
-			self.nodes[name] = Sdb(addr)
-			self.ring.addnode(name)
+		for (i, addr) in enumerate(node_addrs):
+			self.nodes[str(i)] = Sdb(addr)
+			self.ring.addnode(str(i))
 
 	def close(self):
 		for sdb in self.nodes.values():
 			sdb.close()
 	
-	def put(self, k, v)
+	def put(self, k, v):
 		return self.nodes[self.ring.getnode(k)].put(k, v)
 
-	def get(self, k)
+	def get(self, k):
 		return self.nodes[self.ring.getnode(k)].get(k)
 
