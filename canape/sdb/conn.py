@@ -1,5 +1,4 @@
 
-import gevent
 from gevent import socket
 from canape.sdb import gutils
 from canape.sdb.hashring import HashRing
@@ -34,20 +33,25 @@ class ClusterSdb(object):
 	
 	def __init__(self, nodes):
 		names = [name for name in nodes]
+		self.nodes = nodes
 		self.ring = HashRing(names)
 		self.sdbs = {}
-		for (name, addr) in nodes.items():
-			self.sdbs[name] = Sdb(addr)
+		for addr in nodes.values():
+			if addr not in self.sdbs:
+				self.sdbs[addr] = Sdb(addr)
 			
 	def close(self):
 		for sdb in self.sdbs.values():
 			sdb.close()
 	
 	def put(self, k, v):
-		name = self.ring.get_node(k)
-		return self.sdbs[name].put(k, v)
+		return self.getsdb(k).put(k, v)
 
 	def get(self, k):
+		return self.getsdb(k).get(k)
+	
+	def getsdb(self, k):
 		name = self.ring.get_node(k)
-		return self.sdbs[name].get(k)
+		addr = self.nodes[name]
+		return self.sdbs[addr]
 
